@@ -6,6 +6,20 @@ Pure Python library for Ground Penetrating Radar (GPR): IO, processing and visua
 Tested with Python 3.6.
 
 
+## Installation
+
+Èither clone the repo and install with `setup.py`
+
+```git clone https://github.com/ahartikainen/siina  
+cd siina
+python setup.py install
+```
+
+or with a `pip`
+
+`python -m pip install git+https://github.com/ahartikainen/siina`
+
+
 ## Underlying  datastructures
 
 Header information is saved as a dictionary: `obj.header` 
