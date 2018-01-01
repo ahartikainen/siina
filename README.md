@@ -1,9 +1,18 @@
 # Siina
-Pure Python library for Ground Penetrating Radar (GPR): IO, processing and visualization
+
+## Description
+
+Pure Python library for Ground Penetrating Radar (GPR): IO, processing and visualization.  
+Tested with Python 3.6.
 
 
+## Underlying  datastructures
 
-Example
+Header information is saved as a dictionary: `obj.header` 
+Measurement data is saved as a list of ndarrays: `obj.data_list`
+Main channel can be accessed with `.data` -method
+
+## Example usage
 
 ```
 import siina
