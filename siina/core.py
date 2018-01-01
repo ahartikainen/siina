@@ -35,7 +35,14 @@ class RadarFile:
         header, data = self._read_file(filepath)
         self.header = header
         
-        self.data_list = data
+        self.data_list = []
+        self._original_dtypes = []
+        for _data in data:
+            dtype = str(_data.dtype)
+            self._original_dtypes.append(dtype)
+            if 'int' in dtype and dtype.startswith('u'):
+                dtype = dtype.lstrip('u')
+            self.data_list.append(_data.astype(dtype))
         
         self.nrows, self.ncols = None, None
         for _data in self.data_list:
@@ -82,6 +89,15 @@ class RadarFile:
             interpolated_1 = m2 * -1 + m * -1 + b
             self.data[0, :] = interpolated_0
             self.data[1, :] = interpolated_1
+
+    def convert_to_float64(self, channel=None):
+        if hasattr(self, 'data_list'):
+            if channel is None:
+                for i, _data in enumerate(self.data_list):
+                    self.data_list[i] = _data.astype('float64')
+            else:
+                _data = self.data_list[channel]
+                self.data_list[channel] = _data.astype('float64')
 
     def prop_sample_time(self, zero=0):
         sample_range = self.header.get("range")
