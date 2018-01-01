@@ -35,8 +35,8 @@ class RadarFile:
         self.header = header
         self.data = data[0]
         self.nrows, self.ncols = self.data.shape
-        self.nchans = len(data)
-        if self.nchans > 1:
+        self.nchan = len(data)
+        if self.nchan > 1:
             self.data_2 = data[1]
 
         self.data_list = data
