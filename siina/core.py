@@ -6,6 +6,7 @@ from numpy import asarray, mean, polyfit, vstack, hstack
 class RadarFile:
 
     def __init__(self, fileformat=None):
+        self._main_channel = 0
         if fileformat is not None and fileformat.lower() in {'gssi', 'dzt'}:
             self.fileformat = 'dzt'
             self._read_file = read_dzt
@@ -33,14 +34,19 @@ class RadarFile:
 
         header, data = self._read_file(filepath)
         self.header = header
-        self.data = data[0]
+        
         self.nrows, self.ncols = self.data.shape
         self.nchan = len(data)
-        if self.nchan > 1:
-            self.data_2 = data[1]
-
+        
         self.data_list = data
 
+    @method
+    def data(self):
+        if hasattr(self, 'data_list'):
+            return self.data_list[self._main_channel]
+        else:
+            return None
+    
     def read_markers(self, **kwargs):
         """
 
