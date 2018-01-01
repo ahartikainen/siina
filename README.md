@@ -2,15 +2,16 @@
 
 ## Description
 
-Pure Python library for Ground Penetrating Radar (GPR): IO, processing and visualization.  
+Pure Python library for Ground Penetrating Radar (GPR) data processing: IO, filters and visualization.  
 Tested with Python 3.6.
 
 
 ## Installation
 
-Èither clone the repo and install with `setup.py`
+Either clone the repo and install with `setup.py`
 
-```git clone https://github.com/ahartikainen/siina  
+```
+git clone https://github.com/ahartikainen/siina  
 cd siina
 python setup.py install
 ```
@@ -30,7 +31,6 @@ Main channel can be accessed with `.data` -method
 
 ```
 import siina
-import matplotlib.pyplot as plt
 
 # create RadarFile object
 meas = siina.RadarFile()
@@ -56,14 +56,15 @@ meas.func_dc(start=500)
 #     if cutoff is str -> cutoff = float(cutoff) * frequency
 meas.func_filter(cutoff='6')
 
+import matplotlib.pyplot as plt
+
 # plot mean function for the first channel
 # all channels are found under obj.data_list
-
-import matplotlib.pyplot as plt
 plt.plot(meas.data.mean(1))
+plt.show()
 
 # plot radargram with plt.imshow
 # be careful with the profile size (meas.ncols < 5000)
 plt.imshow(meas.data, aspect='auto')
-
+plt.show()
 ```
