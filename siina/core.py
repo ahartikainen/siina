@@ -35,10 +35,15 @@ class RadarFile:
         header, data = self._read_file(filepath)
         self.header = header
         
-        self.nrows, self.ncols = self.data.shape
+        self.data_list = data
+        
+        self.nrows, self.ncols = None, None
+        for _data in data_list:
+            if len(_data):
+                self.nrows, self.ncols = _data.shape
+                break
         self.nchan = len(data)
         
-        self.data_list = data
 
     @property
     def data(self):
