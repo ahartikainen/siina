@@ -38,7 +38,7 @@ class RadarFile:
         self.data_list = data
         
         self.nrows, self.ncols = None, None
-        for _data in data_list:
+        for _data in self.data_list:
             if len(_data):
                 self.nrows, self.ncols = _data.shape
                 break
