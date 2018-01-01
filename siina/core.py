@@ -40,7 +40,7 @@ class RadarFile:
         
         self.data_list = data
 
-    @method
+    @property
     def data(self):
         if hasattr(self, 'data_list'):
             return self.data_list[self._main_channel]
