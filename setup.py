@@ -13,7 +13,7 @@ setup(
     description='Pure Python library for Ground Penetrating Radar (GPR): IO, processing and visualization',
     #long_description='',
     url='https://github.com/ahartikainen/siina',
-    author='Ari Hartikainen'
+    author='Ari Hartikainen',
     license='Apache-2.0',
     classifiers=[
         'Development Statut :: 3 - Alpha',
@@ -22,14 +22,14 @@ setup(
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
-    ]
+    ],
 
-    keywords='ground penetrating radar gpr io'
+    keywords='ground penetrating radar gpr io',
     
-    packages=find_packages(exclude=['docs', 'tests'])
+    packages=find_packages(exclude=['docs', 'tests']),
 
     install_requires=[
         'numpy', 
         'scipy',
-        ]
+        ],
 )
