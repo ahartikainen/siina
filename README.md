@@ -26,11 +26,13 @@ meas.read_markers()
 # center each sample 
 meas.func_dc(start=500)
 
-# apply lowpass filter with cutoff=6xcenter_frequency
+# apply lowpass filter with cutoff= 6 * frequency
+#     if cutoff is float -> cutoff = cutoff
+#     if cutoff is str -> cutoff = float(cutoff) * frequency
 meas.func_filter(cutoff='6')
 
 # plot mean function for the first channel
-# all channels are found under `.data_list`
+# all channels are found under obj.data_list
 
 import matplotlib.pyplot as plt
 plt.plot(meas.data.mean(1))
