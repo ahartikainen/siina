@@ -3,7 +3,7 @@ from .filters import butterworth
 import os
 from numpy import asarray, mean, polyfit, vstack, hstack, linspace
 
-class RadarFile:
+class Radar:
 
     def __init__(self, fileformat=None):
         self._main_channel = 0
