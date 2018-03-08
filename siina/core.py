@@ -1,7 +1,7 @@
 from .dzt import read_dzt
 from .filters import butterworth
 import os
-from numpy import asarray, mean, polyfit, vstack, hstack
+from numpy import asarray, mean, polyfit, vstack, hstack, linspace
 
 class RadarFile:
 
@@ -102,20 +102,20 @@ class RadarFile:
     def prop_sample_time(self, zero=0):
         sample_range = self.header.get("range")
         n = self.nrows
-        return np.linspace(0, sample_range, n) - zero
+        return linspace(0, sample_range, n) - zero
 
     def prop_profile_time(self, timeshift=0):
         sps = self.header.get("samples_per_second")
         n = self.ncols
-        return np.linspace(0, sps * n, n) - timeshift
+        return linspace(0, sps * n, n) - timeshift
 
     def prop_profile_distance(self, shift=0, reverse=False):
         spm = self.header.get("samples_per_meter")
         n = self.ncols
         if reverse:
-            distance = np.linspace(0, spm * n, n)[::-1] - shift
+            distance = linspace(0, spm * n, n)[::-1] - shift
         else:
-            distance = np.linspace(0, spm * n, n) - shift
+            distance = linspace(0, spm * n, n) - shift
         return distance
 
     def prop_coordinates(self):
