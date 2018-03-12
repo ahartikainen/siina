@@ -33,7 +33,7 @@ Main channel can be accessed with `.data` -method
 import siina
 
 # create RadarFile object
-meas = siina.RadarFile()
+meas = siina.Radar()
 
 # read in the data
 meas.read_file("./example_path/example_file.DZT")
@@ -48,7 +48,7 @@ print("points in samples={}, samples={}, channels={}".format(meas.nrows, meas.nc
 # strip markers (important step with .DZT files)
 meas.read_markers()
 
-# center each sample 
+# center each sample (for each trace do func(trace[500:])
 meas.func_dc(start=500)
 
 # apply lowpass filter with cutoff= 6 * frequency
