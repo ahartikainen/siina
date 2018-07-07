@@ -1,7 +1,8 @@
 from numpy import asarray
 from scipy.signal import sosfiltfilt, butter as signal_butter
 
-def butterworth(data, cutoff, fs, order=6, btype='lowpass', axis=0):
+
+def butterworth(data, cutoff, fs, order=6, btype="lowpass", axis=0):
     """Butterworth sosfiltfilt (forward-backward filter)
 
     Parameters
@@ -36,6 +37,8 @@ def butterworth(data, cutoff, fs, order=6, btype='lowpass', axis=0):
     # = 2 * cutt off frequency / sampling frequency
     normal_cutoff = cutoff / nyq
     # Get sos parameters
-    sos = signal_butter(N=order, Wn=normal_cutoff, btype=btype, analog=False, output='sos')
+    sos = signal_butter(
+        N=order, Wn=normal_cutoff, btype=btype, analog=False, output="sos"
+    )
     # run filter
     return sosfiltfilt(sos, data, axis=axis)

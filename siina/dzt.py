@@ -2,8 +2,9 @@ from datetime import datetime
 import struct
 from numpy import dtype as numpy_dtype, fromfile
 
-DZT_HEADER_STRUCT= "=4Hh5fH4s4s7H3f31sc14sH12sH896s"
+DZT_HEADER_STRUCT = "=4Hh5fH4s4s7H3f31sc14sH12sH896s"
 DZT_HEADER_BYTES = 1024
+
 
 def dzt_header_date(date_bytes):
     """Transform 4 (dense) bytes to datetime following the DZT-date format
@@ -26,25 +27,31 @@ def dzt_header_date(date_bytes):
 
     # Transform array back to number with [::-1]
     # Values are uint --> python int with binary repr will work
-    sec2 = int(binary_array[0:5][::-1], base=2)       # 5-bits 00-04  0-29 (second/2)
-    minutes = int(binary_array[5:11][::-1], base=2)   # 6-bits 05-10  0-59
-    hour = int(binary_array[11:16][::-1], base=2)     # 5-bits 11-15  0-23
-    day = int(binary_array[16:21][::-1], base=2)      # 5-bits 16-20  1-31
-    month = int(binary_array[21:25][::-1], base=2)    # 4-bits 21-24  1-12, 1=Jan, 2=Feb, etc.
-    year = int(binary_array[25:32][::-1], base=2)     # 7-bits 25-31  0-127 (0-127 = 1980-2107)
+    sec2 = int(binary_array[0:5][::-1], base=2)  # 5-bits 00-04  0-29 (second/2)
+    minutes = int(binary_array[5:11][::-1], base=2)  # 6-bits 05-10  0-59
+    hour = int(binary_array[11:16][::-1], base=2)  # 5-bits 11-15  0-23
+    day = int(binary_array[16:21][::-1], base=2)  # 5-bits 16-20  1-31
+    month = int(
+        binary_array[21:25][::-1], base=2
+    )  # 4-bits 21-24  1-12, 1=Jan, 2=Feb, etc.
+    year = int(
+        binary_array[25:32][::-1], base=2
+    )  # 7-bits 25-31  0-127 (0-127 = 1980-2107)
 
-    value_range_pairs = ((sec2, (0,30)),
-                         (minutes, (0,60)),
-                         (hour, (0,24)),
-                         (day, (1,32)),
-                         (month, (1,13)),
-                         (year, (0,128)),
-                        )
+    value_range_pairs = (
+        (sec2, (0, 30)),
+        (minutes, (0, 60)),
+        (hour, (0, 24)),
+        (day, (1, 32)),
+        (month, (1, 13)),
+        (year, (0, 128)),
+    )
 
     if all((v >= lb) & (v < ub) for v, (lb, ub) in value_range_pairs):
-        return datetime(1980 + year, month, day, hour, minutes, sec2*2)
+        return datetime(1980 + year, month, day, hour, minutes, sec2 * 2)
     else:
-        return (1980 + year, month, day, hour, minutes, sec2*2)
+        return (1980 + year, month, day, hour, minutes, sec2 * 2)
+
 
 def read_dzt(filepath, fileformat=None, dtype=None, **kwargs):
     """
@@ -89,30 +96,33 @@ def read_dzt(filepath, fileformat=None, dtype=None, **kwargs):
 
     def read(f, **kwargs):
         # parse kwargs
-        _read_dzt_header = kwargs.pop('read_header_function', read_dzt_header)
-        dtype = kwargs.pop('dtype', None)
-        samples_per_scan = kwargs.pop('samples_per_scan', None)
-        channels = kwargs.pop('channels', None)
-        skip_initial = kwargs.pop('skip_initial', None)
+        _read_dzt_header = kwargs.pop("read_header_function", read_dzt_header)
+        dtype = kwargs.pop("dtype", None)
+        samples_per_scan = kwargs.pop("samples_per_scan", None)
+        channels = kwargs.pop("channels", None)
+        skip_initial = kwargs.pop("skip_initial", None)
 
         # read header
         header = _read_dzt_header(f, fileformat, **kwargs)
 
         if dtype is None:
-            dtype = header.get('bits', None)
+            dtype = header.get("bits", None)
         if samples_per_scan is None:
-            samples_per_scan = header.get('samples_per_scan', None)
+            samples_per_scan = header.get("samples_per_scan", None)
         if channels is None:
-            channels = header.get('channels', None)
+            channels = header.get("channels", None)
         if skip_initial is None:
-            skip_initial = header.get('skip_initial', None)
+            skip_initial = header.get("skip_initial", None)
 
         # read data
-        data, errmsg = read_dzt_data(f, dtype=dtype,
-                                     samples_per_scan=samples_per_scan,
-                                     channels=channels,
-                                     skip_initial=skip_initial,
-                                     **kwargs)
+        data, errmsg = read_dzt_data(
+            f,
+            dtype=dtype,
+            samples_per_scan=samples_per_scan,
+            channels=channels,
+            skip_initial=skip_initial,
+            **kwargs,
+        )
 
         return header, data, errmsg
 
@@ -123,9 +133,10 @@ def read_dzt(filepath, fileformat=None, dtype=None, **kwargs):
         header, data, errmsg = read(filepath, **kwargs)
 
     # Add error message to header
-    header['errmsg'] = errmsg
+    header["errmsg"] = errmsg
 
     return header, data
+
 
 def read_dzt_header(fileobject, fileformat=None, **kwargs):
     """
@@ -152,34 +163,72 @@ def read_dzt_header(fileobject, fileformat=None, **kwargs):
         First header, lenght of 1024, unpacked.
         Other headers are found as a list of bytes under `'other_headers'`.
     """
-    encoding = kwargs.get('encoding', 'ascii')
-    frequency = kwargs.get('frequency', None)
+    encoding = kwargs.get("encoding", "ascii")
+    frequency = kwargs.get("frequency", None)
 
     # read the first header
     header = fileobject.read(DZT_HEADER_BYTES)
 
-    #unpack header information
-    (tag, data, nsamp,
-     bits, zero, sps,
-     spm, mpm, position,
-     range, npass, create,
-     modif, rgain, nrgain,
-     text, ntext, proc,
-     nproc, nchan, epsr,
-     top, depth, reserved,
-     dtype, antname, chanmask,
-     name, chksum, variable) \
-     = struct.unpack(DZT_HEADER_STRUCT, header)
+    # unpack header information
+    (
+        tag,
+        data,
+        nsamp,
+        bits,
+        zero,
+        sps,
+        spm,
+        mpm,
+        position,
+        range,
+        npass,
+        create,
+        modif,
+        rgain,
+        nrgain,
+        text,
+        ntext,
+        proc,
+        nproc,
+        nchan,
+        epsr,
+        top,
+        depth,
+        reserved,
+        dtype,
+        antname,
+        chanmask,
+        name,
+        chksum,
+        variable,
+    ) = struct.unpack(DZT_HEADER_STRUCT, header)
 
     tag_bytes = struct.pack("H", tag)
     tag_bits = format(tag, "b")
     create_datetime = dzt_header_date(create)
     modif_datetime = dzt_header_date(modif)
-    reserved_decoded = reserved.decode(encoding, 'ignore').replace('\x00', " ").replace("  ", " ").strip()
+    reserved_decoded = (
+        reserved.decode(encoding, "ignore")
+        .replace("\x00", " ")
+        .replace("  ", " ")
+        .strip()
+    )
     dtype_char = struct.pack("c", dtype)
-    antname_decoded = antname.decode(encoding, 'ignore').replace('\x00', " ").replace("  ", " ").strip()
-    name_decoded = name.decode(encoding, 'ignore').replace('\x00', " ").replace("  ", " ").strip()
-    variable_decoded = variable.decode(encoding, 'ignore').replace('\x00', " ").replace("  ", " ").strip()
+    antname_decoded = (
+        antname.decode(encoding, "ignore")
+        .replace("\x00", " ")
+        .replace("  ", " ")
+        .strip()
+    )
+    name_decoded = (
+        name.decode(encoding, "ignore").replace("\x00", " ").replace("  ", " ").strip()
+    )
+    variable_decoded = (
+        variable.decode(encoding, "ignore")
+        .replace("\x00", " ")
+        .replace("  ", " ")
+        .strip()
+    )
 
     channels = nchan
     samples_per_scan = nsamp
@@ -218,7 +267,12 @@ def read_dzt_header(fileobject, fileformat=None, **kwargs):
         other_header = extra_header[:DZT_HEADER_BYTES]
         other_headers.append(other_header)
 
-        other_header_decoded = other_header.decode(encoding, 'ignore').replace("\x00", "").replace("  ", " ").strip()
+        other_header_decoded = (
+            other_header.decode(encoding, "ignore")
+            .replace("\x00", "")
+            .replace("  ", " ")
+            .strip()
+        )
         if len(other_header_decoded):
             other_headers_decoded[extra_round] = other_header_decoded
 
@@ -226,59 +280,60 @@ def read_dzt_header(fileobject, fileformat=None, **kwargs):
         extra_round += 1
 
     header_dict = {
-        'tag' : tag,
-        'tag_bytes' : tag_bytes,
-        'tag_bits' : tag_bits,
-        'data' : data,
-        'nsamp' : nsamp,
-        'samples_per_scan' : samples_per_scan,
-        'bits' : bits,
-        'zero' : zero,
-        'sps' : sps,
-        'samples_per_second' : samples_per_second,
-        'spm' : spm,
-        'samples_per_meter' : samples_per_meter,
-        'mpm' : mpm,
-        'meters_per_mark' : meters_per_mark,
-        'position' : position,
-        'range' : range,
-        'npass' : npass,
-        'create' : create,
-        'create_datetime' : create_datetime,
-        'modif' : modif,
-        'modif_datetime' : modif_datetime,
-        'rgain' : rgain,
-        'nrgain' : nrgain,
-        'text' : text,
-        'ntext' : ntext,
-        'proc' : proc,
-        'nproc' : nproc,
-        'nchan' : nchan,
-        'channels' : channels,
-        'epsr' : epsr,
-        'top' : top,
-        'depth' : depth,
-        'reserved' : reserved,
-        'reserved_decoded' : reserved_decoded,
-        'dtype' : dtype,
-        'dtype_char' : dtype_char,
-        'antname' : antname,
-        'antname_decoded' : antname_decoded,
-        'chanmask' : chanmask,
-        'name' : name,
-        'name_decoded' : name_decoded,
-        'chksum' : chksum,
-        'variable' : variable,
-        'variable_decoded' : variable_decoded,
-        'frequency' : frequency,
-        'fileformat' : fileformat,
-        'extra_bytes' : extra_bytes,
-        'DZT_HEADER_STRUCT' : DZT_HEADER_STRUCT,
-        'DZT_HEADER_BYTES' : DZT_HEADER_BYTES,
-        'other_headers' : other_headers,
-        'other_headers_decoded' : other_headers_decoded,
+        "tag": tag,
+        "tag_bytes": tag_bytes,
+        "tag_bits": tag_bits,
+        "data": data,
+        "nsamp": nsamp,
+        "samples_per_scan": samples_per_scan,
+        "bits": bits,
+        "zero": zero,
+        "sps": sps,
+        "samples_per_second": samples_per_second,
+        "spm": spm,
+        "samples_per_meter": samples_per_meter,
+        "mpm": mpm,
+        "meters_per_mark": meters_per_mark,
+        "position": position,
+        "range": range,
+        "npass": npass,
+        "create": create,
+        "create_datetime": create_datetime,
+        "modif": modif,
+        "modif_datetime": modif_datetime,
+        "rgain": rgain,
+        "nrgain": nrgain,
+        "text": text,
+        "ntext": ntext,
+        "proc": proc,
+        "nproc": nproc,
+        "nchan": nchan,
+        "channels": channels,
+        "epsr": epsr,
+        "top": top,
+        "depth": depth,
+        "reserved": reserved,
+        "reserved_decoded": reserved_decoded,
+        "dtype": dtype,
+        "dtype_char": dtype_char,
+        "antname": antname,
+        "antname_decoded": antname_decoded,
+        "chanmask": chanmask,
+        "name": name,
+        "name_decoded": name_decoded,
+        "chksum": chksum,
+        "variable": variable,
+        "variable_decoded": variable_decoded,
+        "frequency": frequency,
+        "fileformat": fileformat,
+        "extra_bytes": extra_bytes,
+        "DZT_HEADER_STRUCT": DZT_HEADER_STRUCT,
+        "DZT_HEADER_BYTES": DZT_HEADER_BYTES,
+        "other_headers": other_headers,
+        "other_headers_decoded": other_headers_decoded,
     }
     return header_dict
+
 
 def read_dzt_data(fileobject, dtype, samples_per_scan=None, channels=None, **kwargs):
     """
@@ -306,9 +361,9 @@ def read_dzt_data(fileobject, dtype, samples_per_scan=None, channels=None, **kwa
         In case of failing to reshape, returns one numpy array in a list
     error_message : str
     """
-    skip_initial = kwargs.get('skip_initial', None)
+    skip_initial = kwargs.get("skip_initial", None)
 
-    dtype_dict = {8 : 'uint8', 16 : 'uint16', 32 : 'int32', 64 : 'int64'}
+    dtype_dict = {8: "uint8", 16: "uint16", 32: "int32", 64: "int64"}
 
     if not isinstance(dtype, str):
         dtype = dtype_dict[dtype]
@@ -333,7 +388,7 @@ def read_dzt_data(fileobject, dtype, samples_per_scan=None, channels=None, **kwa
 
     N = samples_per_scan
     D = data_array.size // samples_per_scan
-    data_array = data_array.reshape(N, D, order='F')
+    data_array = data_array.reshape(N, D, order="F")
 
     if not channels:
         err_msg = "channel count is: {}"
