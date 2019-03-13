@@ -21,7 +21,7 @@ class Radar:
             err_msg = "Unknown fileformat: {}\nknown formats are:\n\t'dzt' or 'gssi'"
             raise ValueError(err_msg.format(fileformat))
 
-    def read_file(self, filepath):
+    def read_file(self, filepath, dtype=None):
         if self._read_file is None:
             if isinstance(filepath, str):
                 _, ext = os.path.splitext(filepath)
@@ -34,7 +34,7 @@ class Radar:
             # strip dot(s)
             self.set_fileformat(ext.strip("."))
 
-        header, data = self._read_file(filepath)
+        header, data = self._read_file(filepath, dtype=dtype)
         self.header = header
 
         self.data_list = []
