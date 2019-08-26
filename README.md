@@ -23,7 +23,7 @@ or with a `pip`
 
 ## Underlying  datastructures
 
-Header information is saved as a dictionary: `obj.header` 
+Header information is saved as a dictionary: `obj.header`
 Measurement data is saved as a list of ndarrays: `obj.data_list`
 Main channel can be accessed with `.data` -method
 
@@ -67,4 +67,17 @@ plt.show()
 # be careful with the profile size (meas.ncols < 5000)
 plt.imshow(meas.data, aspect='auto')
 plt.show()
+```
+
+
+# Development
+
+```
+pip install -r requirements-test.txt
+```
+
+```
+black siina
+pylint siina
+pydocstyle --convention=numpy siina
 ```

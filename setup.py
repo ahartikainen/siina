@@ -22,6 +22,7 @@ setup(
         "License :: OSI Approved :: Apache Software License",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
     ],
     keywords="ground penetrating radar gpr io",
     packages=find_packages(exclude=["docs", "tests"]),

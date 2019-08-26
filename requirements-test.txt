@@ -1,0 +1,5 @@
+black
+numpydoc
+pydocstyle
+pylint
+pytest
