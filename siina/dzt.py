@@ -1,13 +1,53 @@
+#  pylint: disable=redefined-builtin,too-many-locals
+"""dzt specific library functions."""
 from datetime import datetime
 import struct
+
 from numpy import dtype as numpy_dtype, fromfile
 
-DZT_HEADER_STRUCT = "=4Hh5fH4s4s7H3f31sc14sH12sH896s"
+
+DZT_HEADER_STRUCT = (
+    "=4H"
+    # rh_tag
+    # rh_data
+    # rh_nsamp
+    # rh_bits
+    "h"  # rh_zero
+    "5f"
+    # rh_sps
+    # rh_spm
+    # rh_mpm
+    # rh_position
+    # rh_range
+    "H"  # rh_npass
+    "4s"  # rh_create
+    "4s"  # rh_modif
+    "7H"
+    # rh_rgain
+    # rh_nrgain
+    # rh_text
+    # rh_ntext
+    # rh_proc
+    # rh_nproc
+    # rh_nchan
+    "3f"
+    # rh_epsr
+    # rh_top
+    # rh_depth
+    "31s"  # reserved
+    "c"  # rh_dtype
+    "14s"  # rh_antname
+    "H"  # rh_chanmask
+    "12s"  # rh_name
+    "H"  # rh_chksum
+    "896s"  # variable
+)
+
 DZT_HEADER_BYTES = 1024
 
 
 def dzt_header_date(date_bytes):
-    """Transform 4 (dense) bytes to datetime following the DZT-date format
+    """Transform 4 (dense) bytes to datetime following the DZT-date format.
 
     Parameters
     ----------
@@ -21,6 +61,7 @@ def dzt_header_date(date_bytes):
     date tuple: tuple
         In a case if datetime object is not well defined.
         Tuple format = (year + 1980, month, day, hour, minutes, seconds=sec*2)
+
     """
     # Little endian binary --> number to binary array with [::-1]
     binary_array = format(struct.unpack("<I", date_bytes)[0], "b").zfill(32)[::-1]
@@ -31,12 +72,8 @@ def dzt_header_date(date_bytes):
     minutes = int(binary_array[5:11][::-1], base=2)  # 6-bits 05-10  0-59
     hour = int(binary_array[11:16][::-1], base=2)  # 5-bits 11-15  0-23
     day = int(binary_array[16:21][::-1], base=2)  # 5-bits 16-20  1-31
-    month = int(
-        binary_array[21:25][::-1], base=2
-    )  # 4-bits 21-24  1-12, 1=Jan, 2=Feb, etc.
-    year = int(
-        binary_array[25:32][::-1], base=2
-    )  # 7-bits 25-31  0-127 (0-127 = 1980-2107)
+    month = int(binary_array[21:25][::-1], base=2)  # 4-bits 21-24  1-12, 1=Jan, 2=Feb, etc.
+    year = int(binary_array[25:32][::-1], base=2)  # 7-bits 25-31  0-127 (0-127 = 1980-2107)
 
     value_range_pairs = (
         (sec2, (0, 30)),
@@ -49,16 +86,16 @@ def dzt_header_date(date_bytes):
 
     if all((v >= lb) & (v < ub) for v, (lb, ub) in value_range_pairs):
         return datetime(1980 + year, month, day, hour, minutes, sec2 * 2)
-    else:
-        return (1980 + year, month, day, hour, minutes, sec2 * 2)
+    return (1980 + year, month, day, hour, minutes, sec2 * 2)
 
 
 def read_dzt(filepath, fileformat=None, dtype=None, **kwargs):
-    """
+    """Read dzt data file.
+
     Parameters
     ----------
     filepath : str or fileobject
-        Path to dzt-file or -fileobject with `.read` method returning bytes.
+        Path to dzt-file or -fileobject with '.read' method returning bytes.
     fileformat : int, optional
         Format for the DZT structure.
         Default is to infer the format from the header
@@ -72,28 +109,21 @@ def read_dzt(filepath, fileformat=None, dtype=None, **kwargs):
     channels : int, optional
     read_header_function : function
         Function to read header.
-        Parameters
-        - f
-        - fileformat
-        - **kwargs
-        Returns
-        dictionary with optional keys:
-        - bits
-        - samples_per_scan
-        - channels
-        - skip_initial
+        Parameters {f, fileformat, **kwargs}
+        Returns dictionary with optional keys
+        {bits, samples_per_scan, channels, skip_initial}
 
     Returns
     -------
     header : dictionary
         First header, length of 1024 bytes, unpacked.
-        Other headers are found as a list of bytes under `'other_headers'`.
+        Other headers are found as a list of bytes under 'other_headers'.
     data : list of numpy arrays
         Each channel in Fortran (column oriented) format.
         In case of failing to reshape, returns one numpy array in a list.
         Error message is found in the header-dict.
-    """
 
+    """
     def read(f, **kwargs):
         # parse kwargs
         _read_dzt_header = kwargs.pop("read_header_function", read_dzt_header)
@@ -126,6 +156,8 @@ def read_dzt(filepath, fileformat=None, dtype=None, **kwargs):
 
         return header, data, errmsg
 
+    if dtype is not None:
+        kwargs["dtype"] = dtype
     if isinstance(filepath, str):
         with open(filepath, "rb") as f:
             header, data, errmsg = read(f, **kwargs)
@@ -139,7 +171,8 @@ def read_dzt(filepath, fileformat=None, dtype=None, **kwargs):
 
 
 def read_dzt_header(fileobject, fileformat=None, **kwargs):
-    """
+    """Read header for dzt datafile.
+
     Parameters
     ----------
     fileobject : fileobject
@@ -162,6 +195,7 @@ def read_dzt_header(fileobject, fileformat=None, **kwargs):
     header : dictionary
         First header, lenght of 1024, unpacked.
         Other headers are found as a list of bytes under `'other_headers'`.
+
     """
     encoding = kwargs.get("encoding", "ascii")
     frequency = kwargs.get("frequency", None)
@@ -208,26 +242,15 @@ def read_dzt_header(fileobject, fileformat=None, **kwargs):
     create_datetime = dzt_header_date(create)
     modif_datetime = dzt_header_date(modif)
     reserved_decoded = (
-        reserved.decode(encoding, "ignore")
-        .replace("\x00", " ")
-        .replace("  ", " ")
-        .strip()
+        reserved.decode(encoding, "ignore").replace("\x00", " ").replace("  ", " ").strip()
     )
     dtype_char = struct.pack("c", dtype)
     antname_decoded = (
-        antname.decode(encoding, "ignore")
-        .replace("\x00", " ")
-        .replace("  ", " ")
-        .strip()
+        antname.decode(encoding, "ignore").replace("\x00", " ").replace("  ", " ").strip()
     )
-    name_decoded = (
-        name.decode(encoding, "ignore").replace("\x00", " ").replace("  ", " ").strip()
-    )
+    name_decoded = name.decode(encoding, "ignore").replace("\x00", " ").replace("  ", " ").strip()
     variable_decoded = (
-        variable.decode(encoding, "ignore")
-        .replace("\x00", " ")
-        .replace("  ", " ")
-        .strip()
+        variable.decode(encoding, "ignore").replace("\x00", " ").replace("  ", " ").strip()
     )
 
     channels = nchan
@@ -268,12 +291,9 @@ def read_dzt_header(fileobject, fileformat=None, **kwargs):
         other_headers.append(other_header)
 
         other_header_decoded = (
-            other_header.decode(encoding, "ignore")
-            .replace("\x00", "")
-            .replace("  ", " ")
-            .strip()
+            other_header.decode(encoding, "ignore").replace("\x00", "").replace("  ", " ").strip()
         )
-        if len(other_header_decoded):
+        if other_header_decoded:
             other_headers_decoded[extra_round] = other_header_decoded
 
         extra_header = extra_header[DZT_HEADER_BYTES:]
@@ -336,7 +356,8 @@ def read_dzt_header(fileobject, fileformat=None, **kwargs):
 
 
 def read_dzt_data(fileobject, dtype, samples_per_scan=None, channels=None, **kwargs):
-    """
+    """Read dzt data.
+
     Parameters
     ----------
     fileobject : fileobject
@@ -360,6 +381,7 @@ def read_dzt_data(fileobject, dtype, samples_per_scan=None, channels=None, **kwa
         Each channel in Fortran format (column oriented).
         In case of failing to reshape, returns one numpy array in a list
     error_message : str
+
     """
     skip_initial = kwargs.get("skip_initial", None)
 
@@ -386,9 +408,9 @@ def read_dzt_data(fileobject, dtype, samples_per_scan=None, channels=None, **kwa
         div, mod = divmod(data_array.size, samples_per_scan)
         return [data_array], err_msg.format(dsize, sps, div, mod)
 
-    N = samples_per_scan
-    D = data_array.size // samples_per_scan
-    data_array = data_array.reshape(N, D, order="F")
+    n_samples = samples_per_scan
+    dimensions = data_array.size // samples_per_scan
+    data_array = data_array.reshape(n_samples, dimensions, order="F")
 
     if not channels:
         err_msg = "channel count is: {}"
