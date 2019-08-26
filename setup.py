@@ -11,7 +11,7 @@ setup(
     name="siina",
     version="0.1.0a0",
     description="Pure Python library for Ground Penetrating Radar (GPR): IO, processing and visualization",
-    # long_description='',
+    #long_description=long_description,
     url="https://github.com/ahartikainen/siina",
     author="Ari Hartikainen",
     license="Apache-2.0",
