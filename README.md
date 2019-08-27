@@ -2,11 +2,19 @@
 
 ## Description
 
-Pure Python library for Ground Penetrating Radar (GPR) data processing: IO, filters and visualization.  
+Python library for Ground Penetrating Radar (GPR) data processing: IO, filters and visualization.  
 Tested with Python 3.6.
 
 
 ## Installation
+
+`siina` can be installed with `pip`
+
+```
+pip install siina
+```
+
+#### Latest Github version
 
 Either clone the repo and install with `setup.py`
 
