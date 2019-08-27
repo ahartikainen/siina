@@ -2,7 +2,8 @@
 
 ## Description
 
-Python library for Ground Penetrating Radar (GPR) data processing: IO, filters and visualization.  
+Python library for Ground Penetrating Radar (GPR) data processing: IO, filters and visualization.
+
 Tested with Python 3.6.
 
 
@@ -29,7 +30,7 @@ or with a `pip`
 `python -m pip install git+https://github.com/ahartikainen/siina`
 
 
-## Underlying  datastructures
+## Underlying datastructures
 
 Header information is saved as a dictionary: `obj.header`
 Measurement data is saved as a list of ndarrays: `obj.data_list`
