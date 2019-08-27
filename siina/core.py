@@ -36,6 +36,17 @@ class Radar:
         if filepath is not None:
             self.read_file(filepath, dtype=dtype)
 
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        msg = "siina Radar class\n"
+        if hasattr(self, "data_list"):
+            msg += "  channels: {}".format(len(self.data_list))
+            for i, _data in enumerate(self.data_list):
+                msg += "\n    channel {}: samples {}, profile steps {}".format(i + 1, *_data.shape)
+        return msg
+
     def set_fileformat(self, fileformat):
         """Set specific fileformat.
 
@@ -94,7 +105,7 @@ class Radar:
 
         self.nrows, self.ncols = None, None
         for _data in self.data_list:
-            if _data:
+            if hasattr(_data, "shape") and len(_data.shape) == 2:
                 self.nrows, self.ncols = _data.shape
                 break
         self.nchan = len(data)

@@ -124,6 +124,7 @@ def read_dzt(filepath, fileformat=None, dtype=None, **kwargs):
         Error message is found in the header-dict.
 
     """
+
     def read(f, **kwargs):
         # parse kwargs
         _read_dzt_header = kwargs.pop("read_header_function", read_dzt_header)
